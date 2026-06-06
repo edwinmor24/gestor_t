@@ -11,9 +11,9 @@ class TareaRepository {
     final response = await http.get(Uri.parse('$baseUrl/api/'));
 
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
-      return body.map((dynamic item) => Tarea.fromJson(item)).toList();
-    } else {
+  List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+  return body.map((dynamic item) => Tarea.fromJson(item)).toList();
+} else {
       throw Exception('Error al conectar con la Matrix de Django');
     }
   }
