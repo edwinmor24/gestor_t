@@ -105,7 +105,7 @@ class _ListaTareasScreenState extends State<ListaTareasScreen> {
                             itemBuilder: (context, index) {
                               final tarea = tareaProvider.tareas[index];
                               return Container(
-                                margin: const EdgeInsets.only(bottom: 10),
+                                margin: const EdgeInsets.only(bottom: 15),
                                 padding: const EdgeInsets.all(15),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.05),

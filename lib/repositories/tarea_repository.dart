@@ -1,13 +1,26 @@
 import 'dart:convert';
+import 'dart:io'; // Necesario para detectar si es Android o iOS (Platform)
+import 'package:flutter/foundation.dart'; // Necesario para detectar si es Web (kIsWeb)
 import 'package:http/http.dart' as http;
 import '../models/tarea_model.dart';
 
 class TareaRepository {
-  // Ajusta esta URL según donde corras el emulador (ej: 'http://10.0.2.2:8000')
-  final String baseUrl = 'http://127.0.0.1:8000';
+  // Función inteligente que calcula la URL correcta dinámicamente
+  String get baseUrl {
+    if (kIsWeb) {
+      // Si corres la app en el navegador de la PC (Chrome)
+      return 'http://127.0.0.1:8000';
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      // Si corres la app en el celular físico con Vysor 
+      // (Recuerda cambiar las XX por el número real de tu ipconfig)
+      return 'http://192.168.80.17:8000';
+    } else {
+      // Caso por defecto (Por ejemplo, si la corres como app de escritorio Windows)
+      return 'http://127.0.0.1:8000';
+    }
+  }
 
-  
-// GET /api/
+  // GET /api/
   Future<List<Tarea>> obtenerTodas() async {
     final response = await http.get(Uri.parse('$baseUrl/api/'));
 
