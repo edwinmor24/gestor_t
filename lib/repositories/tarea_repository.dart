@@ -10,7 +10,7 @@ class TareaRepository {
   Future<List<Tarea>> obtenerTodas() async {
     final response = await http.get(Uri.parse('$baseUrl/api/'));
 
-    if (response.statusCode == 200; UTF8Decoder().convert(response.bodyBytes)) {
+    if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
       return body.map((dynamic item) => Tarea.fromJson(item)).toList();
     } else {
