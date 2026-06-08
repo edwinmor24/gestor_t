@@ -1,179 +1,111 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/tarea_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'crear_tarea_screen.dart'; 
 
-class ListaTareasScreen extends StatefulWidget {
-  const ListaTareasScreen({super.key});
-
-  @override
-  State<ListaTareasScreen> createState() => _ListaTareasScreenState();
-}
-
-class _ListaTareasScreenState extends State<ListaTareasScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Al cargar la vista, le pedimos al proveedor que traiga las tareas de la API
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TareaProvider>().refrescarTareas();
-    });
-  }
-
+class ListaTareasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final tareaProvider = context.watch<TareaProvider>();
-
+    // Escuchamos el provider para reaccionar a cambios
+    final provider = Provider.of<TareaProvider>(context);
+    
     return Scaffold(
-      // Aplicamos el fondo con gradiente psicodélico usando los mismos tonos de tu web
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF120136),
-              Color(0xFF03001E),
-              Color(0xFF7303C0),
-              Color(0xFFEC38BC),
-            ],
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text("Gestor de Tareas Modular", style: TextStyle(color: Colors.cyanAccent)),
+        backgroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // Header Neón (Crear + Filtro)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: () async {
+                    // MANTENEMOS ESTA ESTRUCTURA PARA RECARGAR AL VOLVER
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CrearTareaScreen()),
+                    );
+                    // Al volver de crear, refrescamos la lista automáticamente
+                    Provider.of<TareaProvider>(context, listen: false).obtenerTareas();
+                  },
+                  icon: Icon(Icons.add_circle_outline, color: Colors.cyanAccent),
+                  label: Text("Crear nueva tarea", style: TextStyle(color: Colors.cyanAccent)),
+                ),
+                SizedBox(width: 20),
+                TextButton.icon(
+                  onPressed: () => provider.toggleFiltro(),
+                  icon: Icon(provider.soloPendientes ? Icons.visibility : Icons.visibility_off, color: Colors.cyanAccent),
+                  label: Text(provider.soloPendientes ? "Ver todas" : "Solo pendientes", style: TextStyle(color: Colors.cyanAccent)),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              // Título con el efecto de brillo neón rosa clásico de tu app
-              Text(
-                'Gestor de Tareas Modular',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontFamily: 'Courier New',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(blurRadius: 5, color: Colors.white, offset: Offset.zero),
-                    Shadow(blurRadius: 10, color: const Color(0xFFFF007F), offset: Offset.zero),
-                    Shadow(blurRadius: 20, color: const Color(0xFFFF007F), offset: Offset.zero),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              // Título de la sección
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Listado de tareas',
-                    style: TextStyle(
-                      color: const Color(0xFFFF007F),
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier New',
-                      shadows: [
-                        Shadow(blurRadius: 8, color: const Color(0xFFFF007F)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const Divider(color: Color(0xFF00FFCC), thickness: 1, indent: 20, endIndent: 20),
-
-              // Cuerpo de la aplicación (Cargando o Lista de Tarjetas)
-              Expanded(
-                child: tareaProvider.cargando
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF00FFCC)),
+          Divider(color: Colors.cyanAccent.withOpacity(0.5), thickness: 1),
+          
+          // Listado de tareas
+          Expanded(
+            child: provider.cargando 
+                ? Center(child: CircularProgressIndicator(color: Colors.cyanAccent))
+                : ListView.builder(
+                    itemCount: provider.tareas.length,
+                    itemBuilder: (context, index) {
+                      final tarea = provider.tareas[index];
+                      return Container(
+                        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.cyanAccent.withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.grey[900],
                         ),
-                      )
-                    : tareaProvider.tareas.isEmpty
-                        ? const Center(
-                            child: Text(
-                              '🛸 El cosmos está vacío.\nNo hay tareas guardadas.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Color(0xFF00FFCC), fontSize: 16, fontFamily: 'Courier New'),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(tarea.titulo, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                              subtitle: Text("Estado: ${tarea.estado} | Prioridad: ${tarea.prioridad}", 
+                                          style: TextStyle(color: Colors.cyanAccent)),
                             ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(20),
-                            itemCount: tareaProvider.tareas.length,
-                            itemBuilder: (context, index) {
-                              final tarea = tareaProvider.tareas[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 15),
-                                padding: const EdgeInsets.all(15),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF00FFCC), width: 2),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF00FFCC).withOpacity(0.2),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    )
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '🔮 ${tarea.titulo}',
-                                      style: const TextStyle(
-                                        color: Color(0xFFFF007F),
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text('⚡ Prioridad: ${tarea.prioridad}', style: const TextStyle(color: Color(0xFFFFFB00))),
-                                    const SizedBox(height: 5),
-                                    Text('📝 Descripción: ${tarea.descripcion}', style: const TextStyle(color: Colors.white)),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      'Estado: ${tarea.estado}',
-                                      style: const TextStyle(color: Color(0xFF00FFCC), fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    
-                                    // Bloque de botones para emular el "Viajar a estado"
-                                    const Text('Viajar a estado:', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                    const SizedBox(height: 5),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                                        if (tarea.estado != 'Pendiente')
-                                          TextButton(
-                                            onPressed: () => tareaProvider.viajarAEstado(tarea.id, 'Pendiente'),
-                                            child: const Text('[🌀 Pendiente]', style: TextStyle(color: Colors.cyan)),
-                                          ),
-                                        if (tarea.estado != 'En Progreso')
-                                          TextButton(
-                                            onPressed: () => tareaProvider.viajarAEstado(tarea.id, 'En%20Progreso'),
-                                            child: const Text('[🔥 Progreso]', style: TextStyle(color: Colors.orange)),
-                                          ),
-                                        if (tarea.estado != 'Completada')
-                                          TextButton(
-                                            onPressed: () => tareaProvider.viajarAEstado(tarea.id, 'Completada'),
-                                            child: const Text('[✨ Hecho]', style: TextStyle(color: Colors.green)),
-                                          ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-              ),
-            ],
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildNeonButton(Icons.history, Colors.amberAccent, 'Pendiente', () => provider.actualizarEstado(tarea.id, 'Pendiente')),
+                                _buildNeonButton(Icons.rocket, Colors.orangeAccent, 'En Progreso', () => provider.actualizarEstado(tarea.id, 'En Progreso')),
+                                _buildNeonButton(Icons.check_circle, Colors.greenAccent, 'Completada', () => provider.actualizarEstado(tarea.id, 'Completada')),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(10),
+        color: Colors.black,
+        child: TextButton.icon(
+          icon: Icon(Icons.hub, color: Colors.greenAccent),
+          label: Text("🌌 ENTRAR A LA MATRIX (JSON)", style: TextStyle(color: Colors.greenAccent)),
+          onPressed: () => launchUrl(Uri.parse('http://127.0.0.1:8000/api/')),
         ),
       ),
+    );
+  }
+
+  Widget _buildNeonButton(IconData icon, Color color, String label, VoidCallback onPressed) {
+    return Column(
+      children: [
+        IconButton(icon: Icon(icon, color: color, size: 28), onPressed: onPressed),
+        Text(label, style: TextStyle(color: color, fontSize: 10)),
+      ],
     );
   }
 }
