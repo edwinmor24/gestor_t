@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/tarea_provider.dart';
 import 'repositories/tarea_repository.dart';
 import 'screens/lista_tareas_screen.dart';
+import 'theme/cyberpunk_theme.dart';
 
 void main() {
   runApp(
@@ -13,25 +14,21 @@ void main() {
           create: (_) => TareaProvider(repository: TareaRepository()),
         ),
       ],
-      child: MyApp(), // Sin 'const' aquí
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Gestor de Tareas Modular',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Color(0xFF09090B),
-        primaryColor: Colors.cyanAccent,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Color(0xFF181818),
-        ),
-      ),
-      home: ListaTareasScreen(),
+      title: 'Gestor de Tareas Cyberpunk',
+      theme: cyberTheme(),
+      home: const ListaTareasScreen(),
     );
   }
 }

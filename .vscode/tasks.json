@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Flutter: Get dependencies",
+      "type": "shell",
+      "command": "flutter",
+      "args": ["pub", "get"],
+      "inAgents": true,
+      "runOptions": { "runOn": "worktreeCreated" }
+    },
+    {
+      "label": "Flutter: Run app (debug)",
+      "type": "shell",
+      "command": "flutter",
+      "args": ["run"],
+      "inAgents": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Flutter: Run tests",
+      "type": "shell",
+      "command": "flutter",
+      "args": ["test"],
+      "inAgents": true
+    },
+    {
+      "label": "Flutter: Analyze code",
+      "type": "shell",
+      "command": "flutter",
+      "args": ["analyze"],
+      "inAgents": true
+    }
+  ]
+}

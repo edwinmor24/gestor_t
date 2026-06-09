@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/tarea_model.dart';
 
 class TareaRepository {
-  final String baseUrl = 'http://10.0.2.2:8000/api';
+  final String baseUrl = 'http://192.168.1.3:8000/api';
 
  Future<List<Tarea>> obtenerTodas() async {
   try {
@@ -45,6 +45,19 @@ class TareaRepository {
       return response.statusCode == 200;
     } catch (e) {
       print("Error al cambiar estado: $e");
+      return false;
+    }
+  }
+
+  Future<bool> eliminarTarea(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/eliminar/$id/'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Error al eliminar tarea: $e");
       return false;
     }
   }

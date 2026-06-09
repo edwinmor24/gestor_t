@@ -48,6 +48,20 @@ class TareaProvider with ChangeNotifier {
 
   Future<void> actualizarEstado(int id, String nuevoEstado) async {
     bool exito = await repository.cambiarEstadoBackend(id, nuevoEstado);
-    if (exito) await obtenerTareas(); 
+    if (exito) await obtenerTareas();
+  }
+
+  Future<void> eliminarTarea(int id) async {
+    _cargando = true;
+    notifyListeners();
+
+    bool exito = await repository.eliminarTarea(id);
+
+    if (exito) {
+      await obtenerTareas();
+    }
+
+    _cargando = false;
+    notifyListeners();
   }
 }
